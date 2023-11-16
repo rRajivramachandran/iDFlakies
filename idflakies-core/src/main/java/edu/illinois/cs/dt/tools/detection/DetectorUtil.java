@@ -22,23 +22,24 @@ import java.util.stream.Stream;
 public class DetectorUtil {
 
     public static TestRunResult originalResults(final List<String> originalOrder, final Runner runner) {
-        final int originalOrderTries = Configuration.config().getProperty("dt.detector.original_order.retry_count", 3);
+        final int originalOrderTries = Configuration.config().getProperty("dt.detector.original_order.retry_count", 0);
         final boolean allMustPass = Configuration.config().getProperty("dt.detector.original_order.all_must_pass", true);
 
-        System.out.println("[INFO] Getting original results (" + originalOrder.size() + " tests).");
+        System.out.println("[INFO] Getting original results (" + originalOrder.size() + " tests). modified 3");
 
         TestRunResult origResult = null;
 
         boolean allPassing = false;
         // Try to run it three times, to see if we can get everything to pass (except for ignored tests)
         for (int i = 0; i < originalOrderTries; i++) {
+            System.out.println("rajivrr LOG: original order number tried: " + i);
             origResult = runner.runList(originalOrder).get();
 
             try {
                 Files.write(PathManager.originalResultsLog(), (origResult.id() + "\n").getBytes(),
                         Files.exists(PathManager.originalResultsLog()) ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
             } catch (IOException ignored) {}
-
+            System.out.println("rajivrr Detector util:Coming here");
             if (allPass(origResult)) {
                 allPassing = true;
                 break;
@@ -52,7 +53,7 @@ public class DetectorUtil {
                 Logger.getGlobal().log(Level.INFO, "No passing order for tests (" + originalOrderTries + " runs). Continuing anyway with last run.");
             }
         }
-
+        System.out.println("rajivrr Exit Detector util 3");
         return origResult;
     }
 

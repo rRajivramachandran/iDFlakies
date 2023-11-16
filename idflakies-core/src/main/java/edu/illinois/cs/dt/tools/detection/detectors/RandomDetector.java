@@ -40,13 +40,22 @@ public class RandomDetector extends ExecutingDetector {
 
     @Override
     public DetectionRound results() throws Exception {
+        System.out.println("rajivrr random detector call to results abs round val"+absoluteRound.get());
+        try{
         lastRandomResult = runList(testShuffler.shuffledOrder(absoluteRound.get(),
                                                               lastRandomResult,
                                                               // if last detection round didn't find any *new* OD test, then reverse the last (likely passing) order
                                                               lastRandomDetectionRound == null || lastRandomResult == null || lastRandomDetectionRound.filteredTests().size() != 0));
+        } catch(Exception e){
+            System.out.println("rajivrr got exception in shuffler"+e);
+        }
         // if we want to reverse a run with no failures or errors, then replace the line above with the following
         // lastRandomResult.results().values().stream().anyMatch(testResult -> testResult.result() == Result.FAILURE || testResult.result() == Result.ERROR)
-        lastRandomDetectionRound = makeDts(origResult, lastRandomResult);
+        System.out.println("rajivrr calling makeDts");
+        try{lastRandomDetectionRound = makeDts(origResult, lastRandomResult);
+        } catch(Exception e){
+            System.out.println("rajivrr exception in makeDts"+e);
+        }
         return lastRandomDetectionRound;
     }
 }

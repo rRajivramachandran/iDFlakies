@@ -208,7 +208,13 @@ public class DetectorMojo extends AbstractIDFlakiesMojo {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Logger.getGlobal().log(Level.INFO, "rajivrr start detectorExecute detmojo");
+        try{
         logger.runAndLogError(() -> detectorExecute(logger, mavenProject, moduleRounds(coordinates)));
+        Logger.getGlobal().log(Level.INFO, "rajivrr end detectorExecute detmojo");
+        } catch(Exception e){
+            Logger.getGlobal().log(Level.INFO, "rajivrr exception in detectorExecute detmojo:"+e);
+        }
         timing(startTime);
     }
 
@@ -290,21 +296,26 @@ public class DetectorMojo extends AbstractIDFlakiesMojo {
             Files.createDirectories(outputPath);
             Files.write(PathManager.selectedTestPath(), String.join(System.lineSeparator(), tests).getBytes());
             final Detector detector = DetectorFactory.makeDetector(this.runner, mavenProject.getBasedir(), tests, rounds);
-            Logger.getGlobal().log(Level.INFO, "Created dependent test detector (" + detector.getClass() + ").");
-            detector.writeTo(outputPath);
+            Logger.getGlobal().log(Level.INFO, "rajivrr Created dependent test detector (" + detector.getClass() + "). done mod Detector MOJO");
+            try {
+                detector.writeTo(outputPath);
+                Logger.getGlobal().log(Level.INFO, "rajivrr Complete writing Detector MOJO");
+            } catch (Exception e){
+                Logger.getGlobal().log(Level.INFO, "rajivrr write exception Detector MOJO");
+            }
         } else {
             String errorMsg = "Module has no tests, not running detector.";
             Logger.getGlobal().log(Level.INFO, errorMsg);
             logger.writeError(errorMsg);
         }
-
+        Logger.getGlobal().log(Level.INFO, "rajivrr exits DetectorMojo");
         return null;
     }
 
     private static List<String> locateTests(MavenProject project, TestFramework testFramework) {
         int id = Objects.hash(project, testFramework);
         if (!locateTestList.containsKey(id)) {
-            Logger.getGlobal().log(Level.INFO, "Locating tests...");
+            Logger.getGlobal().log(Level.INFO, "rajivrr Locating tests... detector mojo 3");
             try {
                 locateTestList.put(id, OperationTime.runOperation(() -> {
                     List<String> tests = new ArrayList<>(JavaConverters.bufferAsJavaList(TestLocator.tests(project, testFramework).toBuffer()));
@@ -315,9 +326,11 @@ public class DetectorMojo extends AbstractIDFlakiesMojo {
                     return tests;
                 }));
             } catch (Exception e) {
+                Logger.getGlobal().log(Level.INFO, "rajivrr Locating tests... detector mojo error"+e);
                 throw new RuntimeException(e);
             }
         }
+        Logger.getGlobal().log(Level.INFO, "rajivrr done Locating tests... detector mojo ");
         return locateTestList.get(id);
     }
 
@@ -332,7 +345,7 @@ public class DetectorMojo extends AbstractIDFlakiesMojo {
             TestFramework testFramework,
             boolean ignoreExisting) throws IOException {
         if (!Files.exists(PathManager.originalOrderPath()) || ignoreExisting) {
-            Logger.getGlobal().log(Level.INFO, "Getting original order by parsing logs. ignoreExisting set to: " + ignoreExisting);
+            Logger.getGlobal().log(Level.INFO, "rajivrr Getting original order by parsing logs. ignoreExisting set to: " + ignoreExisting);
 
             List<String> originalOrder = null;
             try {
@@ -355,7 +368,9 @@ public class DetectorMojo extends AbstractIDFlakiesMojo {
                 } else {
                     originalOrder = locateTests(project, testFramework);
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+                Logger.getGlobal().log(Level.INFO, "rajivrr Getting original order by parsing logs detector mojo exception occured: " + ignored);
+            }
 
             // If something went wrong, then configure originalOrder accordingly
             if (originalOrder == null) {
@@ -364,8 +379,10 @@ public class DetectorMojo extends AbstractIDFlakiesMojo {
 
             // Write the computed original order to file if did not exist or specified to ignore existing one
             Files.write(PathManager.originalOrderPath(), String.join(System.lineSeparator(), originalOrder).getBytes());
+            Logger.getGlobal().log(Level.INFO, "rajivrr success original order detector mojo");
             return originalOrder;
         } else {
+            Logger.getGlobal().log(Level.INFO, "rajivrr success gets original order elsewhere detector mojo");
             return Files.readAllLines(PathManager.originalOrderPath());
         }
     }

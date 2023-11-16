@@ -261,14 +261,14 @@ public class DetectorPlugin extends TestPlugin {
         if (!tests.isEmpty()) {
             Files.createDirectories(outputPath);
             final Detector detector = DetectorFactory.makeDetector(this.runner, project.getBasedir(), tests, rounds);
-            TestPluginUtil.project.info("Created dependent test detector (" + detector.getClass() + ").");
+            TestPluginUtil.project.info("rajivrr Created dependent test detector (" + detector.getClass() + "). modief");
             detector.writeTo(outputPath);
         } else {
             String errorMsg = "Module has no tests, not running detector.";
             TestPluginUtil.project.info(errorMsg);
             logger.writeError(errorMsg);
         }
-
+        TestPluginUtil.project.info("rajivrr complete writing");
         return null;
     }
 

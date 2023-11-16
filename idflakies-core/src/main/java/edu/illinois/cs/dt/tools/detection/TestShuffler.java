@@ -83,11 +83,14 @@ public class TestShuffler {
         if (useRevPassing) {
             return shuffledOrder(i);
         } else {
+            Logger.getGlobal().log(Level.INFO, "rajivrr Test shuffler case 4 ");
             List<String> revPassingOrder = Lists.reverse(lastRandomResult.testOrder());
             String md5 = MD5.md5(String.join("", revPassingOrder));
             if (alreadySeenOrders.contains(md5)) {
+                Logger.getGlobal().log(Level.INFO, "rajivrr Test shuffler case 5 ");
                 return shuffledOrder(i);
             } else {
+                Logger.getGlobal().log(Level.INFO, "rajivrr Test shuffler case 6 ");
                 alreadySeenOrders.add(md5);
                 return revPassingOrder;
             }
@@ -95,30 +98,47 @@ public class TestShuffler {
     }
 
     public List<String> shuffledOrder(final int i) {
+        Logger.getGlobal().log(Level.INFO, "rajivrr Test shuffler case 1 ");
         if (type.startsWith("reverse")) {
+            Logger.getGlobal().log(Level.INFO, "rajivrr Test shuffler case 2 ");
             return reverseOrder();
         }
 
         final Path historicalRun = PathManager.detectionRoundPath(historicalType(), i);
+        Logger.getGlobal().log(Level.INFO, "rajivrr Test shuffler case 12 ");
 
         try {
             // look up whether a previous execution of the plugin generated orders for this round already
             // if so, then run the same revealed order as before
             if (Files.exists(historicalRun)) {
+                Logger.getGlobal().log(Level.INFO, "rajivrr Test shuffler case 12 completes return");
                 return generateHistorical(readHistorical(historicalRun));
             }
-        } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+            Logger.getGlobal().log(Level.INFO, "rajivrr Test shuffler shuffled order exception " + ignored);
+        }
 
+        Logger.getGlobal().log(Level.INFO, "rajivrr Test shuffler case 12 call to gen shuffled");
         return generateShuffled();
     }
 
     private List<String> reverseOrder() {
         if ("reverse-class".equals(type)) {
+            Logger.getGlobal().log(Level.INFO, "rajivrr Test shuffler rversing ");
+            try{
             final List<String> reversedClassNames =
                     Lists.reverse(ListUtil.map(TestShuffler::className, tests).stream().distinct().collect(Collectors.toList()));
 
+            Logger.getGlobal().log(Level.INFO, "rajivrr reverse shuffler returns");
             return reversedClassNames.stream().flatMap(c -> classToMethods.get(c).stream()).collect(Collectors.toList());
+            
+            }
+            catch(Exception e){
+                Logger.getGlobal().log(Level.INFO, "rajivrr exception in shuffler isssue"+e);
+                return null;
+            }
         } else {
+            Logger.getGlobal().log(Level.INFO, "rajivrr returns shuffled list");
             return Lists.reverse(tests);
         }
     }
@@ -144,16 +164,19 @@ public class TestShuffler {
 
     private List<String> generateShuffled() {
         // sort the classes alphabetically, then shuffle as to ensure deterministic randomness
+        Logger.getGlobal().log(Level.INFO, "rajivrr Test shuffler case 12 call to gen shuffled again");
         List<String> classes = new ArrayList<>(classToMethods.keySet());
         Collections.sort(classes);
         Collections.shuffle(classes, random);
+        Logger.getGlobal().log(Level.INFO, "rajivrr Test shuffler generateShuffled returns");
         return generateWithClassOrder(classes);
     }
 
     private List<String> generateWithClassOrder(final List<String> classOrder) {
         final List<String> fullTestOrder = new ArrayList<>();
-
+        Logger.getGlobal().log(Level.INFO, "rajivrr Test shuffler case gen class order");
         for (final String className : classOrder) {
+            Logger.getGlobal().log(Level.INFO, "rajivrr Test shuffler gen class order called "+ className);
             // random-class only shuffles classes, not methods
             if ("random-class".equals(type)) {
                 fullTestOrder.addAll(classToMethods.get(className));
@@ -168,7 +191,7 @@ public class TestShuffler {
         }
 
         alreadySeenOrders.add(MD5.md5(String.join("", fullTestOrder)));
-
+        Logger.getGlobal().log(Level.INFO, "rajivrr Test shuffler generateWithClassOrder returns");
         return fullTestOrder;
     }
 

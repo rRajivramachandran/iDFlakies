@@ -50,7 +50,13 @@ public abstract class ExecutingDetector implements Detector, VerbosePrinter {
     public abstract DetectionRound results() throws Exception;
 
     protected TestRunResult runList(final List<String> tests) {
+        System.out.println("rajivrr Call to runner");
+        try{
         return runner.runList(tests).get();
+        } catch(Exception e){
+            System.out.println("rajivrr exception Call to runner"+e);
+            return null;
+        }
     }
 
     public DetectionRound makeDts(final TestRunResult intended, final TestRunResult revealed) {
@@ -90,13 +96,21 @@ public abstract class ExecutingDetector implements Detector, VerbosePrinter {
         final Path listPath = dir.resolve("list.txt");
         final Path dtListPath = dir.resolve(PathManager.FLAKY_LIST_PATH);
 
+        System.out.println("rajivrr Call made to detect");
+        
+        try{
         final DependentTestList dtList = new DependentTestList(detect());
-        System.out.println(); // End the progress line.
-
         print(String.format("[INFO] Found %d tests, writing list to %s and dt lists to %s\n", dtList.size(), listPath, dtListPath));
 
         Files.write(dtListPath, dtList.toString().getBytes());
         Files.write(listPath, StringUtil.unlines(dtList.names()).getBytes());
+        } catch(Exception e){
+            System.out.println("rajivrr Detection exception"+e);
+        }
+        System.out.println("rajivrr Detection done");
+        System.out.println(); // End the progress line.
+
+        
     }
 
     private class RunnerIterator implements Iterator<DependentTest> {
@@ -112,14 +126,21 @@ public abstract class ExecutingDetector implements Detector, VerbosePrinter {
 
         @Override
         public boolean hasNext() {
+            System.out.println("rajivrr Detection starts hasNext call round:"+rounds);
             while (i < rounds && result.isEmpty()) {
+                System.out.println("rajivrr Call to Generate i:"+i+"\n");
+                try{
                 generate();
+                } catch(Exception e){
+                    System.out.println("rajivrr exception in generate"+e);
+                }
             }
 
             return !result.isEmpty();
         }
 
         private DetectionRound generateDetectionRound() {
+            System.out.println("rajivrr Starting generate detection round");
             final Path path = PathManager.detectionRoundPath(name, absoluteRound.get());
 
             // Load it if possible
@@ -144,8 +165,10 @@ public abstract class ExecutingDetector implements Detector, VerbosePrinter {
 
                 return result;
             } catch (RuntimeException e) {
+                System.out.println("rajivrr exception in results"+e);
                 throw e;
             } catch (Exception e) {
+                System.out.println("rajivrr exception in results2"+e);
                 throw new RuntimeException(e);
             }
         }
@@ -158,15 +181,18 @@ public abstract class ExecutingDetector implements Detector, VerbosePrinter {
             final double estimate = elapsed / (i + 1) * (rounds - i - 1) / 1000;
 
             if (!round.filteredTests().dts().isEmpty()) {
+                System.out.println("rajivrr Case 1 i val:"+i);
                 System.out.println(
                         buildResultString(round.filteredTests().size(), ++i, rounds,
                                           elapsed / 1000, totalElapsed, estimate));
                 result.addAll(round.filteredTests().dts());
                 if (!roundsAreTotal) {
+                    System.out.println("rajivrr Case 2 i val:"+i);
                     i = 0;
                 }
                 startTimeMs = System.currentTimeMillis();
             } else {
+                System.out.println("rajivrr Case 3 i val:"+i);
                 System.out.println(
                         buildResultString(round.filteredTests().size(), ++i, rounds,
                                           elapsed / 1000, totalElapsed, estimate));
